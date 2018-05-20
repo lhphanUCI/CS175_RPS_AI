@@ -8,13 +8,12 @@ import cv2
 import PIL.Image, PIL.ImageTk
 import time
 from enum import Enum
-import queue
 import random
 import numpy as np
 
-def debugPrintEntireQueue(imgQueue:queue.Queue(), maxQueueSize:int)->None:
-    for i in range(maxQueueSize):
-        print(imgQueue.get())  
+def debugPrintEntireList(imgList:list, maxListSize:int)->None:
+    for i in range(maxListSize):
+        print(imgList[i])  
 
 class Classification(Enum):
     NONE = 0
@@ -29,22 +28,23 @@ strDict = {
         Classification.SCISSOR: "Scissor"
     }
 
-def getFilledBlankImgQueue( maxQueueSize:int, inputDimensions:(int, int, int) )->queue.Queue():
-    imgQueue = queue.Queue(maxsize=maxQueueSize)
-    for i in range(maxQueueSize):
-        blankImg = np.zeros( (inputDimensions[0], inputDimensions[1], inputDimensions[2]) )
-        imgQueue.put(blankImg)
-    return imgQueue
+def getFilledBlankImgList( maxListSize:int, inputDimensions:(int, int, int) )->list:
+    imgList = []
+    for i in range(maxListSize):
+        blankImg = np.zeros( (inputDimensions[0], inputDimensions[1], inputDimensions[2]) ) #Can't be outside. Insert will pass by ref
+        imgList.append(blankImg)
+    imgList[0][0][0][0] = 500
+    return imgList
 
 
 class App:
     def __init__(self, window:'window', windowTitle:str, updateRate:int
-                 , maxQueueSize:int, inputDimension:(int, int, int), video_source=0):
-        self.imgQueue = getFilledBlankImgQueue(maxQueueSize, inputDimension)
+                 , maxListSize:int, inputDimension:(int, int, int), video_source=0):
+        self.imgList = getFilledBlankImgList(maxListSize, inputDimension)
 
         self.window = window
         self.window.title(windowTitle)
-        self.maxQueueSize = maxQueueSize
+        self.maxListSize = maxListSize
         self.inputDimension = inputDimension
         self.video_source = video_source
 
@@ -78,7 +78,8 @@ class App:
 
     def isDetectingPlayableMove(self):
         ################################### TO DO ###################################
-        #To get queue so far, do   theQueue = self.imgQueue
+        #To get list so far, do   theList = self.imgList
+        #debugPrintEntireList(self.imgList, self.maxListSize) #This will display the 100 frames in list so far
         return True
         
         ############################## ERASE ABOVE AND IMPLEMENT ####################
@@ -101,8 +102,8 @@ class App:
         self.strVar.set(strClassification)
         
     def handleNewInput(self, newFrame:'LxHx3 npArry')->None:
-        self.imgQueue.get() #Remove front
-        self.imgQueue.put(newFrame) # Add lastest frame
+        self.imgList.pop(0) #Remove front
+        self.imgList.append(newFrame) # Add lastest frame
 
         if( self.isDetectingPlayableMove() ):
             newClassification = self.getNewClassificaton(newFrame)
@@ -139,7 +140,7 @@ class MyVideoCapture:
 if __name__=="__main__":
     # Create a window and pass it to the Application object
     windowTitle = "Rock Paper Scissor AI"
-    updateRate = 15
-    maxQueueSize = 100
+    updateRate = 33 #Grabs frame every updateRate milliseconds. So this is roughly 30frames/s if I calc correct
+    maxListSize = 100
     inputDimension = [500,500, 3]
-    App(Tk(), windowTitle, updateRate, maxQueueSize, inputDimension)
+    App(Tk(), windowTitle, updateRate, maxListSize, inputDimension)
