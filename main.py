@@ -21,6 +21,9 @@ class Classification(Enum):
     PAPER = 2
     SCISSOR = 3
 
+    def __str__(self):
+        return self.name.title()
+
 strDict = {
         Classification.NONE: "None",
         Classification.ROCK: "Rock",
@@ -84,7 +87,7 @@ class App:
         
         ############################## ERASE ABOVE AND IMPLEMENT ####################
 
-    def getNewClassificaton(self, hundredthFrame:'LxHx3 npArry')->str:
+    def getNewClassificaton(self, hundredthFrame:'LxHx3 npArry')->Classification:
         ################################### TO DO ###################################
         randomVal = random.randrange(4)
         if(randomVal == 0):
@@ -102,8 +105,9 @@ class App:
         self.strVar.set(strClassification)
         
     def handleNewInput(self, newFrame:'LxHx3 npArry')->None:
-        self.imgList.pop(0) #Remove front
-        self.imgList.append(newFrame) # Add lastest frame
+        self.imgList.append(newFrame)  # Add lastest frame
+        if len(self.imgList) >= self.maxListSize:
+            self.imgList.pop(0) #Remove front
 
         if( self.isDetectingPlayableMove() ):
             newClassification = self.getNewClassificaton(newFrame)
@@ -130,7 +134,7 @@ class MyVideoCapture:
             else:
                 return (ret, None)
         else:
-            return (ret, None)
+            raise Exception("MyVideoCapture: Cannot get frame because VideoCapture is not open.")
 
     # Release the video source when the object is destroyed
     def __del__(self):
