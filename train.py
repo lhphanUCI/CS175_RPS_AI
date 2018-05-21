@@ -31,7 +31,7 @@ def cross_valididation(session, model, x, y, batch_size=64, epochs=5, K=5, verbo
                                                 feed_dict={X: batch_x, Y: batch_y, training: True})
 
                 if verbose and batch_i % print_interval == 0:
-                    print("Train Batch {}: Loss = {}, Accuracy = {}".format(batch_i, loss, accuracy))
+                    print("Train Batch {}: Loss = {}, Accuracy = {}".format(batch_i + 1, loss, accuracy))
                 sum_loss += loss
                 sum_accuracy += accuracy
 
@@ -48,7 +48,7 @@ def cross_valididation(session, model, x, y, batch_size=64, epochs=5, K=5, verbo
                                          feed_dict={X: batch_x, Y: batch_y, training: False})
 
             if verbose and batch_i % print_interval == 0:
-                print("Valid Batch {}: Loss = {}, Accuracy = {}".format(batch_i, loss, accuracy))
+                print("Valid Batch {}: Loss = {}, Accuracy = {}".format(batch_i + 1, loss, accuracy))
             sum_loss += loss
             sum_accuracy += accuracy
 
@@ -73,8 +73,8 @@ def cross_valididation(session, model, x, y, batch_size=64, epochs=5, K=5, verbo
 
 
 def predict(session, model, X):
-    predict_op = model[0]
-    return argmax(session.run([predict_op]))
+    predict_op, X_input = model[0][0], model[1][0]
+    return argmax(session.run([predict_op], feed_dict={X_input:X}))
 
 
 def save(session, save_path):
@@ -90,8 +90,10 @@ def load(session, save_path):
 def _batches(inputs, batch_size, shuffle=False, allow_smaller_final_batch=False):
     if not isinstance(inputs, list) or not isinstance(inputs, tuple):
         raise TypeError("Inputs must be of type list or tuple.")
-    total_size = len(inputs[0])
-    if not all([len(x) == total_size for x in inputs]):
+    if not all([isinstance(x, np.array) for x in inputs]):
+        raise TypeError("Each input in the input list must be a numpy array.")
+    total_size = inputs[0].shape[0]
+    if not all([x.shape[0] == total_size for x in inputs]):
         raise RuntimeError("All inputs must have equal first dimension.")
 
     order = np.arange(total_size) if shuffle is False else np.random.permutation(total_size)
