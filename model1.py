@@ -27,19 +27,22 @@ def model(image_size):
 
         raise NotImplementedError("Not Yet Implemented")
 
+    with tf.variable_scope("Predict"):
+        predict_op = tf.nn.softmax(logits)
+
     with tf.variable_scope("Loss"):
         losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=Y)
         loss_op = tf.reduce_mean(losses)
 
     with tf.variable_scope("Accuracy"):
-        pred = tf.argmax(logits, axis=1)
-        accuracy_op = tf.reduce_mean(tf.equal(pred, Y))
+        prediction = tf.argmax(logits, axis=1)
+        accuracy_op = tf.reduce_mean(tf.equal(prediction, Y))
 
     with tf.variable_scope("Optimizer"):
         optimizer = tf.train.AdamOptimizer()
         train_op = tf.cond(training, optimizer.minimize(loss_op), None)
 
-    return [loss_op, accuracy_op, train_op]
+    return [predict_op, loss_op, accuracy_op, train_op], (X, Y, training)
 
 
 if __name__ == "__main__":
