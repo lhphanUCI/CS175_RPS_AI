@@ -41,7 +41,7 @@ def getFilledBlankImgList( maxListSize:int, inputDimensions:(int, int, int) )->l
 
 
 class App:
-    def __init__(self, window:'window', windowTitle:str, updateRate:int
+    def __init__(self, window:'window', windowTitle:str, delayOnCapture:int
                  , maxListSize:int, inputDimension:(int, int, int), video_source=0):
         self.imgList = getFilledBlankImgList(maxListSize, inputDimension)
 
@@ -63,7 +63,7 @@ class App:
         self.lblClassification.pack(anchor=CENTER, expand=True)
 
         # After it is called once, the update method will be automatically called every delay milliseconds
-        self.delay = updateRate
+        self.delay = delayOnCapture
         self.update()
 
         self.window.mainloop()
@@ -144,7 +144,7 @@ class MyVideoCapture:
 if __name__=="__main__":
     # Create a window and pass it to the Application object
     windowTitle = "Rock Paper Scissor AI"
-    updateRate = 33 #Grabs frame every updateRate milliseconds. So this is roughly 30frames/s if I calc correct
+    delayOnCapture = 30 #Grabs new frame every delayOnCapture milliseconds.
     maxListSize = 100
     inputDimension = [500,500, 3]
-    App(Tk(), windowTitle, updateRate, maxListSize, inputDimension)
+    App(Tk(), windowTitle, delayOnCapture, maxListSize, inputDimension)
