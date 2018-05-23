@@ -6,6 +6,11 @@ https://solarianprogrammer.com/2018/04/21/python-opencv-show-video-tkinter-windo
 from tkinter import *
 import cv2
 import PIL.Image, PIL.ImageTk
+import os
+
+DATASET_DIR = './recordedDataset'
+IMAGE_COUNTER = 0
+IS_CAPTURE_IMGS_MODE = True
 
 class App:
     def __init__(self, window:'window', windowTitle:str, delayOnCapture:int
@@ -29,14 +34,25 @@ class App:
         self.window.mainloop()
 
     def update(self):
+        global IMAGE_COUNTER
+        global DATASET_DIR
+        global IS_CAPTURE_IMGS_MODE
+        
         # Get a frame from the video source
         ret, newFrame = self.vid.get_frame()
         rgbNewFrame = cv2.cvtColor(newFrame, cv2.COLOR_BGR2RGB) #Now in [r, b, g] form
 
+        
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(rgbNewFrame))
             self.canvas.create_image(0, 0, image = self.photo, anchor = NW)
+            #Write the video file
             self.vid.out.write(newFrame) #Note, this has to be in BGR form. write will convert BGR->RGB I think
+
+            if IS_CAPTURE_IMGS_MODE: #Write a image file if mode is set
+                imgFilePath=DATASET_DIR+"/img"+str(IMAGE_COUNTER)+".jpg"
+                cv2.imwrite(imgFilePath, newFrame)
+                IMAGE_COUNTER = IMAGE_COUNTER + 1
         self.window.after(self.delay, self.update)
 
 
@@ -53,7 +69,7 @@ class MyVideoCapture:
         self.height = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         # Define the codec and create VideoWriter object.The output is stored in 'recordedOutput.xvid' file.
-        self.out = cv2.VideoWriter('recordedOutput.avi',cv2.VideoWriter_fourcc(*'XVID'), delayOnCapture, (self.width, self.height))
+        self.out = cv2.VideoWriter(DATASET_DIR + '/recordedOutput.avi',cv2.VideoWriter_fourcc(*'XVID'), delayOnCapture, (self.width, self.height))
 
     def get_frame(self):
         if self.vid.isOpened():
@@ -72,6 +88,9 @@ class MyVideoCapture:
             self.vid.release()
 
 if __name__=="__main__":
+    if not os.path.exists(DATASET_DIR): #Creates dataset folder
+        os.makedirs(DATASET_DIR)
+    
     # Create a window and pass it to the Application object
     windowTitle = "Frame recorder"
     delayOnCapture = 30 #Captures frame every delayOnCapture milliseconds
