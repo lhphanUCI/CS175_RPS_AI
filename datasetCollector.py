@@ -1,4 +1,11 @@
 '''
+Running this file will activate webcam to record video. When the program
+is closed, the video file is written to the path assigned in the
+variable 'DATASET_DIR'. 
+
+If the variable called IS_WRITE_EACH_FRAME_TO_FILE_MODE is set to true,
+then it will also write each frame as a jpeg file.
+
 UI Template from
 https://solarianprogrammer.com/2018/04/21/python-opencv-show-video-tkinter-window/
 '''
@@ -10,7 +17,7 @@ import os
 
 DATASET_DIR = './recordedDataset'
 IMAGE_COUNTER = 0
-IS_CAPTURE_IMGS_MODE = True
+IS_WRITE_EACH_FRAME_TO_FILE_MODE = True
 
 class App:
     def __init__(self, window:'window', windowTitle:str, delayOnCapture:int
@@ -36,7 +43,7 @@ class App:
     def update(self):
         global IMAGE_COUNTER
         global DATASET_DIR
-        global IS_CAPTURE_IMGS_MODE
+        global IS_WRITE_EACH_FRAME_TO_FILE_MODE
         
         # Get a frame from the video source
         ret, newFrame = self.vid.get_frame()
@@ -49,7 +56,7 @@ class App:
             #Write the video file
             self.vid.out.write(newFrame) #Note, this has to be in BGR form. write will convert BGR->RGB I think
 
-            if IS_CAPTURE_IMGS_MODE: #Write a image file if mode is set
+            if IS_WRITE_EACH_FRAME_TO_FILE_MODE: #Write a image file if mode is set
                 imgFilePath=DATASET_DIR+"/img"+str(IMAGE_COUNTER)+".jpg"
                 cv2.imwrite(imgFilePath, newFrame)
                 IMAGE_COUNTER = IMAGE_COUNTER + 1
