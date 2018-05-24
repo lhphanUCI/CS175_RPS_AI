@@ -22,12 +22,11 @@ IMAGE_COUNTER = 0
 IS_WRITE_EACH_FRAME_TO_FILE_MODE = True
 
 class App:
-    def __init__(self, window:'window', windowTitle:str, output_framerate:int
-                 , inputDimension:(int, int, int), video_source=0):
+    def __init__(self, window:'window', windowTitle:str, output_framerate:int, video_source=0):
         self.window = window
         self.window.title(windowTitle)
-        self.inputDimension = inputDimension
         self.video_source = video_source
+        self.output_framerate = output_framerate
 
         self.fps_counter = SimpleFPSCounter(length=16)
         self.time_value = StringVar()
@@ -36,15 +35,14 @@ class App:
 
         # open video source (by default this will try to open the computer webcam)
         self.vid = MyVideoCapture(output_framerate, video_source)
+        self.vid_dims = [self.vid.height, self.vid.width, 3]
 
         # Create a canvas that can fit the above video source size
-        self.canvas = Canvas(window, width = self.vid.width, height = self.vid.height)
+        self.canvas = Canvas(window, height=self.vid_dims[0], width=self.vid_dims[1])
         self.canvas.pack()
 
         # After it is called once, the update method will be automatically called every delay milliseconds
-        self.output_framerate = output_framerate
         self.update()
-
         self.window.mainloop()
 
     def update(self):
@@ -126,6 +124,5 @@ if __name__=="__main__":
     
     # Create a window and pass it to the Application object
     windowTitle = "Frame recorder"
-    delayOnCapture = 30 #Captures frame every delayOnCapture milliseconds
-    inputDimension = [500,500, 3]
-    App(Tk(), windowTitle, delayOnCapture, inputDimension)
+    output_framerate = 20 #Captures frame every delayOnCapture milliseconds
+    App(Tk(), windowTitle, output_framerate)
