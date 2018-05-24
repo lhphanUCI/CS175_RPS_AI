@@ -14,28 +14,35 @@ from tkinter import *
 import cv2
 import PIL.Image, PIL.ImageTk
 import os
+from timeit import default_timer as timer
+from numpy import mean
 
 DATASET_DIR = './recordedDataset'
 IMAGE_COUNTER = 0
 IS_WRITE_EACH_FRAME_TO_FILE_MODE = True
 
 class App:
-    def __init__(self, window:'window', windowTitle:str, delayOnCapture:int
+    def __init__(self, window:'window', windowTitle:str, output_framerate:int
                  , inputDimension:(int, int, int), video_source=0):
         self.window = window
         self.window.title(windowTitle)
         self.inputDimension = inputDimension
         self.video_source = video_source
 
+        self.fps_counter = SimpleFPSCounter(length=16)
+        self.time_value = StringVar()
+        self.time_label = Label(window, textvariable=self.time_value, font=("Helvetica", 16))
+        self.time_label.pack(anchor=CENTER, expand=True)
+
         # open video source (by default this will try to open the computer webcam)
-        self.vid = MyVideoCapture(delayOnCapture, video_source)
+        self.vid = MyVideoCapture(output_framerate, video_source)
 
         # Create a canvas that can fit the above video source size
         self.canvas = Canvas(window, width = self.vid.width, height = self.vid.height)
         self.canvas.pack()
 
         # After it is called once, the update method will be automatically called every delay milliseconds
-        self.delay = delayOnCapture
+        self.output_framerate = output_framerate
         self.update()
 
         self.window.mainloop()
@@ -44,6 +51,9 @@ class App:
         global IMAGE_COUNTER
         global DATASET_DIR
         global IS_WRITE_EACH_FRAME_TO_FILE_MODE
+
+        # Update and Display Frame Counter
+        self.time_value.set("FPS: {:.2f}".format(self.fps_counter.update()))
         
         # Get a frame from the video source
         ret, newFrame = self.vid.get_frame()
@@ -60,12 +70,11 @@ class App:
                 imgFilePath=DATASET_DIR+"/img"+str(IMAGE_COUNTER)+".jpg"
                 cv2.imwrite(imgFilePath, newFrame)
                 IMAGE_COUNTER = IMAGE_COUNTER + 1
-        self.window.after(self.delay, self.update)
-
+        self.window.after(1, self.update)
 
 
 class MyVideoCapture:
-    def __init__(self, delayOnCapture, video_source=0):
+    def __init__(self, framerate, video_source=0):
         # Open the video source
         self.vid = cv2.VideoCapture(video_source)
         if not self.vid.isOpened():
@@ -76,7 +85,7 @@ class MyVideoCapture:
         self.height = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         # Define the codec and create VideoWriter object.The output is stored in 'recordedOutput.xvid' file.
-        self.out = cv2.VideoWriter(DATASET_DIR + '/recordedOutput.avi',cv2.VideoWriter_fourcc(*'XVID'), delayOnCapture, (self.width, self.height))
+        self.out = cv2.VideoWriter(DATASET_DIR + '/recordedOutput.avi',cv2.VideoWriter_fourcc(*'XVID'), framerate, (self.width, self.height))
 
     def get_frame(self):
         if self.vid.isOpened():
@@ -93,6 +102,23 @@ class MyVideoCapture:
     def __del__(self):
         if self.vid.isOpened():
             self.vid.release()
+
+
+class SimpleFPSCounter:
+
+    def __init__(self, length=5):
+        self.last_time = timer()
+        self.last_intervals = []
+        self.length = length
+
+    def update(self):
+        new_time = timer()
+        self.last_intervals.append(new_time - self.last_time)
+        self.last_time = new_time
+        if len(self.last_intervals) > self.length:
+            self.last_intervals.pop(0)
+        return 1 / mean(self.last_intervals)
+
 
 if __name__=="__main__":
     if not os.path.exists(DATASET_DIR): #Creates dataset folder
