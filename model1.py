@@ -47,10 +47,6 @@ def model(image_size):
     return [predict_op, loss_op, accuracy_op, train_op], (X, Y, training)
 
 
-def keras_model():
-    pass
-
-
 if __name__ == "__main__":
     save_path = "/tmp/model1.ckpt"
 
