@@ -13,19 +13,21 @@ def model(image_size):
     training = tf.placeholder(tf.bool)
 
     with tf.variable_scope("Model"):
-        # TODO: Implement Model Definition
-
-        # Arbitrary Example
-        l = X
-        l = tf.layers.conv2d(l, filters=16, kernel_size=[5, 5], strides=[2, 2], padding="same", activation=tf.nn.relu)
-        l = tf.layers.conv2d(l, filters=8, kernel_size=[5, 5], strides=[2, 2], padding="same", activation=tf.nn.relu)
-        l = tf.layers.max_pooling2d(l, pool_size=[2, 2], strides=[2, 2])
-        l = tf.layers.flatten(l)
-        l = tf.layers.dense(l, units=100, activation=tf.nn.relu)
-        l = tf.layers.dense(l, units=50, activation=tf.nn.relu)
-        logits = tf.layers.dense(l, units=2)
-
-        raise NotImplementedError("Not Yet Implemented")
+        conv1 = tf.map_fn(lambda x: tf.layers.conv2d(x, filters=1, kernel_size=[9,9], strides=[4,4],
+                                                     padding="valid", activation=tf.nn.relu,
+                                                     name="conv1", reuse=True), X)
+        conv2 = tf.map_fn(lambda x: tf.layers.conv2d(x, filters=1, kernel_size=[9,9], strides=[4,4],
+                                                     padding="valid", activation=tf.nn.relu,
+                                                     name="conv2", reuse=True), conv1)
+        maxp1 = tf.map_fn(lambda x: tf.layers.max_pooling2d(x, pool_size=[4,4], strides=[3,3], padding="valid"), conv2)
+        flat1 = tf.map_fn(lambda x: tf.layers.flatten(x), maxp1)
+        dens1 = tf.map_fn(lambda x: tf.layers.dense(x, units=64, activation=tf.nn.relu,
+                                                    name="dens1", reuse=True), flat1)
+        dens2 = tf.map_fn(lambda x: tf.layers.dense(x, units=1, activation=tf.nn.relu,
+                                                    name="dens2", reuse=True), dens1)
+        flat2 = tf.layers.flatten(dens2)
+        dens3 = tf.layers.dense(flat2, units=64)  # Consider changing the number of units.
+        logits = tf.layers.dense(dens3, units=2)
 
     with tf.variable_scope("Predict"):
         predict_op = tf.nn.softmax(logits)
@@ -43,6 +45,10 @@ def model(image_size):
         train_op = tf.cond(training, optimizer.minimize(loss_op), None)
 
     return [predict_op, loss_op, accuracy_op, train_op], (X, Y, training)
+
+
+def keras_model():
+    pass
 
 
 if __name__ == "__main__":
