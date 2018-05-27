@@ -28,7 +28,8 @@ class App:
         self.video_source = video_source
         self.output_framerate = output_framerate
 
-        self.fps_counter = SimpleFPSCounter(length=16)
+        self.fps_limiter = SimpleFrameLimiter(fps=output_framerate)
+        self.fps_counter = SimpleFPSCounter(length=5)
         self.time_value = StringVar()
         self.time_label = Label(window, textvariable=self.time_value, font=("Helvetica", 16))
         self.time_label.pack(anchor=CENTER, expand=True)
@@ -46,29 +47,36 @@ class App:
         self.window.mainloop()
 
     def update(self):
+        self.fps_limiter.start()
+
+        # Update and Display Frame Counter
+        self.time_value.set("FPS: {:.2f}".format(self.fps_counter.update()))
+
+        # Poll the next frame from the input source
+        self.get_frame()
+
+        self.fps_limiter.end()
+        self.window.after(self.fps_limiter.delay(), self.update)
+
+    def get_frame(self):
         global IMAGE_COUNTER
         global DATASET_DIR
         global IS_WRITE_EACH_FRAME_TO_FILE_MODE
 
-        # Update and Display Frame Counter
-        self.time_value.set("FPS: {:.2f}".format(self.fps_counter.update()))
-        
         # Get a frame from the video source
         ret, newFrame = self.vid.get_frame()
-        rgbNewFrame = cv2.cvtColor(newFrame, cv2.COLOR_BGR2RGB) #Now in [r, b, g] form
+        rgbNewFrame = cv2.cvtColor(newFrame, cv2.COLOR_BGR2RGB)  # Now in [r, b, g] form
 
-        
         if ret:
-            self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(rgbNewFrame))
-            self.canvas.create_image(0, 0, image = self.photo, anchor = NW)
-            #Write the video file
-            self.vid.out.write(newFrame) #Note, this has to be in BGR form. write will convert BGR->RGB I think
+            self.photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(rgbNewFrame))
+            self.canvas.create_image(0, 0, image=self.photo, anchor=NW)
+            # Write the video file
+            self.vid.out.write(newFrame)  # Note, this has to be in BGR form. write will convert BGR->RGB I think
 
-            if IS_WRITE_EACH_FRAME_TO_FILE_MODE: #Write a image file if mode is set
-                imgFilePath=DATASET_DIR+"/img"+str(IMAGE_COUNTER)+".jpg"
+            if IS_WRITE_EACH_FRAME_TO_FILE_MODE:  # Write a image file if mode is set
+                imgFilePath = DATASET_DIR + "/img" + str(IMAGE_COUNTER) + ".jpg"
                 cv2.imwrite(imgFilePath, newFrame)
                 IMAGE_COUNTER = IMAGE_COUNTER + 1
-        self.window.after(1, self.update)
 
 
 class MyVideoCapture:
@@ -121,11 +129,30 @@ class SimpleFPSCounter:
         return 1 / mean(self.last_intervals)
 
 
+class SimpleFrameLimiter:
+
+    def __init__(self, fps):
+        self.fps = fps
+        self.max_delay = 1000 / fps
+        self._start_time = timer()
+        self._end_time = timer()
+
+    def start(self):
+        self._start_time = timer()
+
+    def end(self):
+        self._end_time = timer()
+
+    def delay(self):
+        between = float(self._end_time - self._start_time) * 1000
+        return max(int(self.max_delay - between), 1)
+
+
 if __name__=="__main__":
     if not os.path.exists(DATASET_DIR): #Creates dataset folder
         os.makedirs(DATASET_DIR)
     
     # Create a window and pass it to the Application object
     windowTitle = "Frame recorder"
-    output_framerate = 20 #Captures frame every delayOnCapture milliseconds
+    output_framerate = 15 #Captures frame every delayOnCapture milliseconds
     App(Tk(), windowTitle, output_framerate)
