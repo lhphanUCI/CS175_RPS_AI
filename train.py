@@ -65,8 +65,9 @@ def cross_valididation(session, model, x, y, batch_size=64, epochs=5, K=5, verbo
 
     plt.figure()
     plt.title("Training Loss per Epoch")
-    plt.plot(np.arange(epochs), np.array(train_loss))
+    plt.plot(np.arange(epochs), np.array(train_loss).T)
     plt.xlabel("Epoch")
+    plt.xticks(np.arange(epochs), np.arange(epochs))
     plt.ylabel("Loss")
     plt.legend(["Fold %d" % i for i in range(1, K+1)])
     plt.show()
@@ -88,9 +89,9 @@ def load(session, save_path):
 
 
 def _batches(inputs, batch_size, shuffle=False, allow_smaller_final_batch=False):
-    if not isinstance(inputs, list) or not isinstance(inputs, tuple):
+    if not isinstance(inputs, list) and not isinstance(inputs, tuple):
         raise TypeError("Inputs must be of type list or tuple.")
-    if not all([isinstance(x, np.array) for x in inputs]):
+    if not all([isinstance(x, np.ndarray) for x in inputs]):
         raise TypeError("Each input in the input list must be a numpy array.")
     total_size = inputs[0].shape[0]
     if not all([x.shape[0] == total_size for x in inputs]):
@@ -101,3 +102,16 @@ def _batches(inputs, batch_size, shuffle=False, allow_smaller_final_batch=False)
         yield [x[order[(i)*batch_size:(i+1)*batch_size]] for x in inputs]
     if allow_smaller_final_batch:
         yield [x[order[int(total_size / batch_size)*batch_size:]] for x in inputs]
+
+
+def shuffle(inputs):
+    if not isinstance(inputs, list) and not isinstance(inputs, tuple):
+        raise TypeError("Inputs must be of type list or tuple.")
+    if not all([isinstance(x, np.ndarray) for x in inputs]):
+        raise TypeError("Each input in the input list must be a numpy array.")
+    total_size = inputs[0].shape[0]
+    if not all([x.shape[0] == total_size for x in inputs]):
+        raise RuntimeError("All inputs must have equal first dimension.")
+
+    order = np.random.permutation(total_size)
+    return [x[order] for x in inputs]

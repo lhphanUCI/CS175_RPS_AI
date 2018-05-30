@@ -11,7 +11,7 @@ def getXAndYForSingleMove(moveFramesDirPath:str, moveCSVPath:str)->('[X]','[Y]')
         fullPath = moveFramesDirPath + "/" + str(i) + ".jpeg"
         img = cv2.imread(fullPath,cv2.IMREAD_COLOR )
         rgbFrame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Now in [r, b, g] form
-        resizedImg = cv2.resize(rgbFrame, (100, 100))
+        resizedImg = cv2.resize(rgbFrame, (64, 64))
         moveX.append(resizedImg)
     moveX = np.asarray(moveX)
 
@@ -34,10 +34,12 @@ def loadDataSet(rockFramesDirPath:str, paperFramesDirPath:str, scissorFramesDirP
     Y = np.concatenate((rockY, paperY, scissorY), axis=0)
 
     return (X, Y)   
-    
-X, Y = loadDataSet('./dataset/imgs/rock_frames', './dataset/imgs/paper_frames', './dataset/imgs/scissor_frames'
-            , './dataset/csvs/rock.csv', './dataset/csvs/paper.csv', './dataset/csvs/scissor.csv')
-print(X)
-print(Y)
-print(X.shape)
-print(Y.shape)
+
+
+if __name__ == "__main__":
+    X, Y = loadDataSet('./dataset/imgs/rock_frames', './dataset/imgs/paper_frames', './dataset/imgs/scissor_frames'
+                , './dataset/csvs/rock.csv', './dataset/csvs/paper.csv', './dataset/csvs/scissor.csv')
+    print(X)
+    print(Y)
+    print(X.shape)
+    print(Y.shape)
