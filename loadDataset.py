@@ -23,7 +23,7 @@ def getXAndYForSingleMove(moveFramesDirPath:str, moveCSVPath:str)->('[X]','[Y]')
     return (moveX, moveY)
 
 def loadDataSet(rockFramesDirPath:str, paperFramesDirPath:str, scissorFramesDirPath:str
-                , rockCSVPath, paperCSVPath, scissorCSVPath)->('[X]','[Y]'):
+                , rockCSVPath:str, paperCSVPath:str, scissorCSVPath:str)->('[X]','[Y]'):
 
     rockX, rockY = getXAndYForSingleMove(rockFramesDirPath, rockCSVPath)
     paperX, paperY = getXAndYForSingleMove(paperFramesDirPath, paperCSVPath)
