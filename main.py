@@ -9,7 +9,17 @@ import PIL.Image, PIL.ImageTk
 import time
 from enum import Enum
 import random
+import os
+
+import tensorflow as tf
 import numpy as np
+
+import window_utils
+import model1
+import model2
+
+from numpy import argmax
+
 
 def debugPrintEntireList(imgList:list, maxListSize:int)->None:
     for i in range(maxListSize):
@@ -24,13 +34,6 @@ class Classification(Enum):
     def __str__(self):
         return self.name.title()
 
-strDict = {
-        Classification.NONE: "None",
-        Classification.ROCK: "Rock",
-        Classification.PAPER: "Paper",
-        Classification.SCISSOR: "Scissor"
-    }
-
 def getFilledBlankImgList( maxListSize:int, inputDimensions:(int, int, int) )->list:
     imgList = []
     for i in range(maxListSize):
@@ -41,77 +44,99 @@ def getFilledBlankImgList( maxListSize:int, inputDimensions:(int, int, int) )->l
 
 
 class App:
-    def __init__(self, window:'window', windowTitle:str, delayOnCapture:int
-                 , maxListSize:int, inputDimension:(int, int, int), video_source=0):
-        self.imgList = getFilledBlankImgList(maxListSize, inputDimension)
-
+    def __init__(self, window:'window', windowTitle:str, fps:int
+                 , maxListSize:int, video_source=0):
         self.window = window
         self.window.title(windowTitle)
-        self.maxListSize = maxListSize
-        self.inputDimension = inputDimension
-        self.video_source = video_source
 
         # open video source (by default this will try to open the computer webcam)
+        self.video_source = video_source
         self.vid = MyVideoCapture(self.video_source)
+        self.inputDimension = [self.vid.height, self.vid.width, 3]
+        self.maxListSize = maxListSize
+        self.imgList = [np.zeros((64, 64, 3))] * maxListSize  #getFilledBlankImgList(self.maxListSize, self.inputDimension)
 
         # Create a canvas that can fit the above video source size
         self.canvas = Canvas(window, width = self.vid.width, height = self.vid.height)
         self.canvas.pack()
+        self.photo = None
 
         self.strVar = StringVar(value="None")
         self.lblClassification = Label(window, textvariable=self.strVar, font=("Helvetica", 16))
         self.lblClassification.pack(anchor=CENTER, expand=True)
 
-        # After it is called once, the update method will be automatically called every delay milliseconds
-        self.delay = delayOnCapture
-        self.update()
+        # Set up frame counters and limiters. No more than (fps) frames per second.
+        # Also set up label to display current frame rate.
+        self.fps = fps
+        self.fps_counter = window_utils.SimpleFPSCounter()
+        self.fps_limiter = window_utils.SimpleFPSLimiter(fps=fps)
+        self.fps_value = StringVar()
+        self.fps_label = Label(window, textvariable=self.fps_value, font=("Helvetica", 16))
+        self.fps_label.pack(anchor=CENTER, expand=True)
 
+        # Initialize Tensorflow Models
+        tf.reset_default_graph()
+        self.session = tf.Session()
+        self.model1 = model1.construct([64, 64, 3])
+        self.model2 = model2.construct([64, 64, 3])
+        saver = tf.train.Saver()
+        saver.restore(self.session, os.path.join(os.getcwd(), "savedmodels\\both\\models.ckpt"))
+
+        # _main_loop() will "recursively" call itself at most (fps) times per second.
+        self._main_loop()
         self.window.mainloop()
 
+    def _main_loop(self):
+        # Record time at the start of the frame
+        self.fps_limiter.start()
+
+        # Update and Display Frame Counter
+        self.fps_value.set("FPS: {:.2f}".format(self.fps_counter.update()))
+
+        # Run custom update() function
+        self.update()
+
+        # Record time at the end of the frame
+        self.fps_limiter.end()
+        self.window.after(self.fps_limiter.delay(), self._main_loop)
+
     def update(self):
+        # TODO: Implement main functionality here.
         # Get a frame from the video source
         ret, newFrame = self.vid.get_frame()
-        self.handleNewInput(newFrame)
+        if not ret:
+            self.strVar.set("Error: Failed to read from video source.")
+            return None
+        self.photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(newFrame))
+        self.canvas.create_image(0, 0, image=self.photo, anchor=NW)
 
-        if ret:
-            self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(newFrame))
-            self.canvas.create_image(0, 0, image = self.photo, anchor = NW)
+        # Add the (normalized) frame to the queue.
+        normalized_frame = cv2.resize((newFrame.astype(np.float32) - 128) / 128, (64, 64))
+        self.imgList.append(normalized_frame)
+        if len(self.imgList) >= self.maxListSize:
+            self.imgList.pop(0)
 
-        self.window.after(self.delay, self.update)
+        # Predict if three shakes were made and classify image.
+        if self.predict_shake():
+            self.setNewPrediction(self.predict_class())
+        else:
+            self.setNewPrediction(Classification.NONE)
 
-    def isDetectingPlayableMove(self):
-        ################################### TO DO ###################################
-        #To get list so far, do   theList = self.imgList
-        #debugPrintEntireList(self.imgList, self.maxListSize) #This will display the 100 frames in list so far
-        return True
-        
-        ############################## ERASE ABOVE AND IMPLEMENT ####################
+    def predict_shake(self) -> bool:
+        predict_op, X_in = self.model1[0][0], self.model1[1][0]
+        #print(all(x.shape == self.imgList[0].shape for x in self.imgList))
+        #a = np.vstack(self.imgList)
+        softmax = self.session.run(predict_op, feed_dict={X_in: np.array(self.imgList)[None]})
+        return bool(argmax(softmax))
 
-    def getNewClassificaton(self, hundredthFrame:'LxHx3 npArry')->Classification:
-        ################################### TO DO ###################################
-        randomVal = random.randrange(4)
-        if(randomVal == 0):
-            return Classification.NONE
-        if(randomVal == 1):
-            return Classification.ROCK
-        if(randomVal == 2):
-            return Classification.PAPER
-        if(randomVal == 3):
-            return Classification.SCISSOR
-        ############################ ERASE RANDOM ABOVE AND IMPLEMENT ##################
+    def predict_class(self) -> Classification:
+        predict_op, X_in = self.model2[0][0], self.model2[1][0]
+        softmax = self.session.run(predict_op, feed_dict={X_in: np.array(self.imgList[-1])[None]})
+        return Classification(argmax(softmax)+1)
 
     def setNewPrediction(self, classification:Classification)->None:
-        strClassification = strDict[classification]
-        self.strVar.set(strClassification)
-        
-    def handleNewInput(self, newFrame:'LxHx3 npArry')->None:
-        self.imgList.append(newFrame)  # Add lastest frame
-        if len(self.imgList) >= self.maxListSize:
-            self.imgList.pop(0) #Remove front
+        self.strVar.set(str(classification))
 
-        if( self.isDetectingPlayableMove() ):
-            newClassification = self.getNewClassificaton(newFrame)
-            self.setNewPrediction(newClassification)
 
 class MyVideoCapture:
     def __init__(self, video_source=0):
@@ -144,7 +169,6 @@ class MyVideoCapture:
 if __name__=="__main__":
     # Create a window and pass it to the Application object
     windowTitle = "Rock Paper Scissor AI"
-    delayOnCapture = 30 #Grabs new frame every delayOnCapture milliseconds.
-    maxListSize = 100
-    inputDimension = [500,500, 3]
-    App(Tk(), windowTitle, delayOnCapture, maxListSize, inputDimension)
+    fps = 15
+    maxListSize = 45
+    App(Tk(), windowTitle, fps, maxListSize)
