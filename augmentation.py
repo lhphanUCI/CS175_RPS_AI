@@ -7,6 +7,7 @@ import json
 
 # From https://www.pyimagesearch.com/2015/10/05/opencv-gamma-correction/
 
+SETTINGS_PATH = './settings.json'
 TEST_MODE = True
       
 def adjust_gamma(image, gamma=1.0):
@@ -19,15 +20,15 @@ def adjust_gamma(image, gamma=1.0):
 	# apply gamma correction using the lookup table
 	return cv2.LUT(image, table)
     
-def getBrightnessAugX(moveFramesDirPath:str, gamma:float, settingsPath:str)->'[HxWx3]':
-    global FOURCC
+def getBrightnessAugForSingleMove(moveFramesDirPath:str, moveCSVPath:str, gamma:float)->('[X]','[Y]'):
+    global SETTINGS_PATH
     global TEST_MODE
     
     origOutput = None
     augOutput = None
     settingsData = None
     
-    with open(settingsPath) as f:
+    with open(SETTINGS_PATH) as f:
         settingsData = json.load(f)
     
     outputDim = (int(settingsData['resizedW']), int(settingsData['resizedH']))
@@ -39,8 +40,8 @@ def getBrightnessAugX(moveFramesDirPath:str, gamma:float, settingsPath:str)->'[H
         if not os.path.exists(outputTestVideosDir): #Creates outputTestVideos folder
             os.makedirs(outputTestVideosDir)
             
-        origOutput = cv2.VideoWriter(outputTestVideosDir + '/original.avi', fourcc, frameRate, outputDim)
-        augOutput = cv2.VideoWriter(outputTestVideosDir + '/augmented.avi', fourcc, frameRate, outputDim)
+        origOutput = cv2.VideoWriter(outputTestVideosDir + "/orig" + os.path.basename(moveCSVPath) + '.avi', fourcc, frameRate, outputDim)
+        augOutput = cv2.VideoWriter(outputTestVideosDir + "/aug" + os.path.basename(moveCSVPath) + '.avi', fourcc, frameRate, outputDim)
         
     fileList = os.listdir(moveFramesDirPath)
     moveX = []
@@ -60,11 +61,31 @@ def getBrightnessAugX(moveFramesDirPath:str, gamma:float, settingsPath:str)->'[H
     if TEST_MODE:
         origOutput.release()
         augOutput.release()
-    return np.asarray(moveX)
-        
-if __name__ == "__main__":
-    settingsPath = './settings.json'
-    gamma = 0.5 # Value of 1 means original output. Between (0, 1) means darken. Above 1 means brighten
-    resizedAugX = getBrightnessAugX('./dataset/imgs/rock_frames', gamma, settingsPath)
-    print(resizedAugX)
+    moveX = np.asarray(moveX)
+
+    moveY = np.zeros(amtFiles)
+    i=0
+    with open(moveCSVPath) as f:
+        for line in f:
+            moveY[i] = int(line)
+            i = i + 1
+
+    return (moveX, moveY)
+
+def getAugmentedDataSet(rockFramesDirPath:str, paperFramesDirPath:str, scissorFramesDirPath:str
+                , rockCSVPath:str, paperCSVPath:str, scissorCSVPath:str, gamma:float)->('[X]','[Y]'):
+
+    rockX, rockY = getBrightnessAugForSingleMove(rockFramesDirPath, rockCSVPath, gamma)
+    paperX, paperY = getBrightnessAugForSingleMove(paperFramesDirPath, paperCSVPath, gamma)
+    scissorX, scissorY = getBrightnessAugForSingleMove(scissorFramesDirPath, scissorCSVPath, gamma)
     
+    X = np.concatenate((rockX, paperX, scissorX), axis=0)
+    Y = np.concatenate((rockY, paperY, scissorY), axis=0)
+
+    return (X, Y)   
+
+     
+if __name__ == "__main__":
+    gamma = 0.5 # Value of 1 means original output. Between (0, 1) means darken. Above 1 means brighten
+    X, Y = getAugmentedDataSet('./dataset/imgs/rock_frames', './dataset/imgs/paper_frames', './dataset/imgs/scissor_frames'
+                , './dataset/csvs/rock.csv', './dataset/csvs/paper.csv', './dataset/csvs/scissor.csv', gamma)
