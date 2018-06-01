@@ -115,3 +115,8 @@ def shuffle(inputs):
 
     order = np.random.permutation(total_size)
     return [x[order] for x in inputs]
+
+
+def normalize(X):
+    X2 = X - np.mean(X)
+    return X2 / np.std(X2)
