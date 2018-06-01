@@ -72,7 +72,7 @@ def getBrightnessAugForSingleMove(moveFramesDirPath:str, moveCSVPath:str, gamma:
 
     return (moveX, moveY)
 
-def getAugmentedDataSet(rockFramesDirPath:str, paperFramesDirPath:str, scissorFramesDirPath:str
+def getAugmentedBrightnessDataSet(rockFramesDirPath:str, paperFramesDirPath:str, scissorFramesDirPath:str
                 , rockCSVPath:str, paperCSVPath:str, scissorCSVPath:str, gamma:float)->('[X]','[Y]'):
 
     rockX, rockY = getBrightnessAugForSingleMove(rockFramesDirPath, rockCSVPath, gamma)
@@ -87,5 +87,5 @@ def getAugmentedDataSet(rockFramesDirPath:str, paperFramesDirPath:str, scissorFr
      
 if __name__ == "__main__":
     gamma = 0.5 # Value of 1 means original output. Between (0, 1) means darken. Above 1 means brighten
-    X, Y = getAugmentedDataSet('./dataset/imgs/rock_frames', './dataset/imgs/paper_frames', './dataset/imgs/scissor_frames'
+    X, Y = getAugmentedBrightnessDataSet('./dataset/imgs/rock_frames', './dataset/imgs/paper_frames', './dataset/imgs/scissor_frames'
                 , './dataset/csvs/rock.csv', './dataset/csvs/paper.csv', './dataset/csvs/scissor.csv', gamma)
