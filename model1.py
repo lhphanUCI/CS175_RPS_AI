@@ -24,31 +24,32 @@ def construct(image_size):
     Y = tf.placeholder(tf.int64, [None])
     training = tf.placeholder(tf.bool)
 
-    with tf.variable_scope("Model"):
-        conv1 = _conv_axis1_loop(X, filters=1, kernel_size=[7,7], strides=[4,4],
-                                 padding="valid", activation=tf.nn.relu,
-                                 name="conv1", reuse=tf.AUTO_REUSE)
-        conv2 = _conv_axis1_loop(conv1, filters=1, kernel_size=[7,7], strides=[4,4],
-                                 padding="valid", activation=tf.nn.relu,
-                                 name="conv2", reuse=tf.AUTO_REUSE)
-        flat2 = tf.layers.flatten(conv2)
-        dens4 = tf.layers.dense(flat2, units=64)
-        dens5 = tf.layers.dense(dens4, units=16)
-        logits = tf.layers.dense(dens5, units=2)
+    with tf.variable_scope("Model1"):
+        with tf.variable_scope("Model"):
+            conv1 = _conv_axis1_loop(X, filters=1, kernel_size=[7,7], strides=[4,4],
+                                     padding="valid", activation=tf.nn.relu,
+                                     name="conv1", reuse=tf.AUTO_REUSE)
+            conv2 = _conv_axis1_loop(conv1, filters=1, kernel_size=[7,7], strides=[4,4],
+                                     padding="valid", activation=tf.nn.relu,
+                                     name="conv2", reuse=tf.AUTO_REUSE)
+            flat2 = tf.layers.flatten(conv2)
+            dens4 = tf.layers.dense(flat2, units=64)
+            dens5 = tf.layers.dense(dens4, units=16)
+            logits = tf.layers.dense(dens5, units=2)
 
-    with tf.variable_scope("Predict"):
-        predict_op = tf.nn.softmax(logits)
+        with tf.variable_scope("Predict"):
+            predict_op = tf.nn.softmax(logits)
 
-    with tf.variable_scope("Loss"):
-        loss_op = tf.losses.softmax_cross_entropy(logits=logits, onehot_labels=tf.one_hot(Y, 2))
+        with tf.variable_scope("Loss"):
+            loss_op = tf.losses.softmax_cross_entropy(logits=logits, onehot_labels=tf.one_hot(Y, 2))
 
-    with tf.variable_scope("Accuracy"):
-        prediction = tf.argmax(logits, axis=1)
-        accuracy_op = tf.reduce_mean(tf.cast(tf.equal(prediction, Y), tf.float32))
+        with tf.variable_scope("Accuracy"):
+            prediction = tf.argmax(logits, axis=1)
+            accuracy_op = tf.reduce_mean(tf.cast(tf.equal(prediction, Y), tf.float32))
 
-    with tf.variable_scope("Optimizer"):
-        optimizer = tf.train.AdamOptimizer()
-        train_op = optimizer.minimize(loss_op)  # TODO: tf.cond(): return None if not training
+        with tf.variable_scope("Optimizer"):
+            optimizer = tf.train.AdamOptimizer()
+            train_op = optimizer.minimize(loss_op)  # TODO: tf.cond(): return None if not training
 
     return [predict_op, loss_op, accuracy_op, train_op], (X, Y, training)
 
@@ -85,4 +86,3 @@ if __name__ == "__main__":
 
         print("Training...")
         train.cross_valididation(session, model, X, Y, epochs=5, print_interval=10)
-
