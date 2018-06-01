@@ -1,0 +1,2 @@
+model_checkpoint_path: "C:\\Users\\kingw\\OneDrive\\School\\CS175\\Project\\github\\CS175_RPS_AI\\savedmodels\\both\\models.ckpt"
+all_model_checkpoint_paths: "C:\\Users\\kingw\\OneDrive\\School\\CS175\\Project\\github\\CS175_RPS_AI\\savedmodels\\both\\models.ckpt"

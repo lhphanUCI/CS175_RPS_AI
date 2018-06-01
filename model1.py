@@ -24,7 +24,7 @@ def construct(image_size):
     Y = tf.placeholder(tf.int64, [None])
     training = tf.placeholder(tf.bool)
 
-    with tf.variable_scope("Model1"):
+    with tf.variable_scope("model1"):
         with tf.variable_scope("Model"):
             conv1 = _conv_axis1_loop(X, filters=1, kernel_size=[7,7], strides=[4,4],
                                      padding="valid", activation=tf.nn.relu,
