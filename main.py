@@ -33,6 +33,7 @@ class Classification(Enum):
     def __str__(self):
         return self.name.title()
 
+"""
 def getFilledBlankImgList( maxListSize:int, inputDimensions:(int, int, int) )->list:
     imgList = []
     for i in range(maxListSize):
@@ -40,6 +41,7 @@ def getFilledBlankImgList( maxListSize:int, inputDimensions:(int, int, int) )->l
         imgList.append(blankImg)
     imgList[0][0][0][0] = 500
     return imgList
+"""
 
 
 class App:
@@ -53,7 +55,7 @@ class App:
         self.vid = MyVideoCapture(self.video_source)
         self.inputDimension = [self.vid.height, self.vid.width, 3]
         self.maxListSize = maxListSize
-        self.imgList = [np.zeros((64, 64, 3))] * maxListSize  #getFilledBlankImgList(self.maxListSize, self.inputDimension)
+        self.imgList = [np.zeros((64, 64, 3))] * maxListSize
 
         # Create a canvas that can fit the above video source size
         self.canvas = Canvas(window, width = self.vid.width, height = self.vid.height)
@@ -123,8 +125,6 @@ class App:
 
     def predict_shake(self) -> bool:
         predict_op, X_in = self.model1[0][0], self.model1[1][0]
-        #print(all(x.shape == self.imgList[0].shape for x in self.imgList))
-        #a = np.vstack(self.imgList)
         softmax = self.session.run(predict_op, feed_dict={X_in: np.array(self.imgList)[None]})
         return bool(argmax(softmax))
 
