@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-
+import settings
 
 # import matplotlib.pyplot as plt
 
@@ -32,7 +32,7 @@ def crop(images):
     # crop value
     offsetHeight = np.random.randint(0, 64)
     offsetWidth = np.random.randint(0, 64)
-    crop_value = [offsetHeight, offsetWidth, 64, 64]
+    crop_value = [offsetHeight, offsetWidth, settings.get_config("resizedH"), settings.get_config("resizedW")]
     crop_values = []
     for i in range(images.shape[0]):
         crop_values.append(crop_value)
