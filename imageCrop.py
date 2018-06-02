@@ -30,8 +30,8 @@ def crop(images):
     # print (images.shape)
 
     # crop value
-    offsetHeight = np.random.randint(0, 64)
-    offsetWidth = np.random.randint(0, 64)
+    offsetHeight = np.random.randint(0, images[0].shape[0]-settings.get_config("resizedH"))
+    offsetWidth = np.random.randint(0, images[0].shape[1]-settings.get_config("resizedW"))
     crop_value = [offsetHeight, offsetWidth, settings.get_config("resizedH"), settings.get_config("resizedW")]
     crop_values = []
     for i in range(images.shape[0]):
