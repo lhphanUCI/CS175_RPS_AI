@@ -54,8 +54,9 @@ class App:
         self.video_source = video_source
         self.vid = MyVideoCapture(self.video_source)
         self.inputDimension = [self.vid.height, self.vid.width, 3]
+        image_size = [64, 64, 3]
         self.maxListSize = maxListSize
-        self.imgList = [np.zeros((64, 64, 3))] * maxListSize
+        self.imgList = [np.zeros(image_size)] * maxListSize
 
         # Create a canvas that can fit the above video source size
         self.canvas = Canvas(window, width = self.vid.width, height = self.vid.height)
@@ -78,8 +79,8 @@ class App:
         # Initialize Tensorflow Models
         tf.reset_default_graph()
         self.session = tf.Session()
-        self.model1 = models.model1([64, 64, 3])
-        self.model2 = models.model2([64, 64, 3])
+        self.model1 = models.model1(image_size)
+        self.model2 = models.model2(image_size)
         saver = tf.train.Saver()
         saver.restore(self.session, os.path.join(os.getcwd(), "savedmodels\\both\\models.ckpt"))
 
