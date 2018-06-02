@@ -1,5 +1,10 @@
 {
+    "window_title": "Rock Paper Scissor AI",
 	"frameRate": "30.0",
 	"resizedW": 64,
-	"resizedH": 64
+	"resizedH": 64,
+
+    "max_fps": 15,
+	"image_input_size": [64, 64, 3],
+    "image_history_length": 45
 }

@@ -2,8 +2,8 @@ import tensorflow as tf
 import numpy as np
 
 
-def model1(image_size):
-    X = tf.placeholder(tf.float32, [None, 45, *image_size])
+def model1(image_size, image_history_length):
+    X = tf.placeholder(tf.float32, [None, image_history_length, *image_size])
     Y = tf.placeholder(tf.int64, [None])
     training = tf.placeholder(tf.bool)
 

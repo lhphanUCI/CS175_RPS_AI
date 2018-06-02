@@ -14,8 +14,9 @@ import os
 import tensorflow as tf
 import numpy as np
 
-import window_utils
 import models
+import settings
+import window_utils
 
 from numpy import argmax
 
@@ -45,18 +46,17 @@ def getFilledBlankImgList( maxListSize:int, inputDimensions:(int, int, int) )->l
 
 
 class App:
-    def __init__(self, window:'window', windowTitle:str, fps:int
-                 , maxListSize:int, video_source=0):
+    def __init__(self, window:'window', video_source=0):
         self.window = window
-        self.window.title(windowTitle)
+        self.window.title(settings.get_config("window_title"))
 
         # open video source (by default this will try to open the computer webcam)
         self.video_source = video_source
         self.vid = MyVideoCapture(self.video_source)
         self.inputDimension = [self.vid.height, self.vid.width, 3]
-        image_size = [64, 64, 3]
-        self.maxListSize = maxListSize
-        self.imgList = [np.zeros(image_size)] * maxListSize
+        image_size = settings.get_config("image_input_size")
+        self.maxListSize = settings.get_config("image_history_length")
+        self.imgList = [np.zeros(image_size)] * self.maxListSize
 
         # Create a canvas that can fit the above video source size
         self.canvas = Canvas(window, width = self.vid.width, height = self.vid.height)
@@ -69,9 +69,9 @@ class App:
 
         # Set up frame counters and limiters. No more than (fps) frames per second.
         # Also set up label to display current frame rate.
-        self.fps = fps
+        self.fps = settings.get_config("max_fps")
         self.fps_counter = window_utils.SimpleFPSCounter()
-        self.fps_limiter = window_utils.SimpleFPSLimiter(fps=fps)
+        self.fps_limiter = window_utils.SimpleFPSLimiter(fps=self.fps)
         self.fps_value = StringVar()
         self.fps_label = Label(window, textvariable=self.fps_value, font=("Helvetica", 16))
         self.fps_label.pack(anchor=CENTER, expand=True)
@@ -79,7 +79,7 @@ class App:
         # Initialize Tensorflow Models
         tf.reset_default_graph()
         self.session = tf.Session()
-        self.model1 = models.model1(image_size)
+        self.model1 = models.model1(image_size, self.maxListSize)
         self.model2 = models.model2(image_size)
         saver = tf.train.Saver()
         saver.restore(self.session, os.path.join(os.getcwd(), "savedmodels\\both\\models.ckpt"))
@@ -168,7 +168,4 @@ class MyVideoCapture:
 
 if __name__=="__main__":
     # Create a window and pass it to the Application object
-    windowTitle = "Rock Paper Scissor AI"
-    fps = 15
-    maxListSize = 45
-    App(Tk(), windowTitle, fps, maxListSize)
+    App(Tk())
