@@ -15,8 +15,7 @@ import tensorflow as tf
 import numpy as np
 
 import window_utils
-import model1
-import model2
+import models
 
 from numpy import argmax
 
@@ -77,8 +76,8 @@ class App:
         # Initialize Tensorflow Models
         tf.reset_default_graph()
         self.session = tf.Session()
-        self.model1 = model1.construct([64, 64, 3])
-        self.model2 = model2.construct([64, 64, 3])
+        self.model1 = models.model1([64, 64, 3])
+        self.model2 = models.model2([64, 64, 3])
         saver = tf.train.Saver()
         saver.restore(self.session, os.path.join(os.getcwd(), "savedmodels\\both\\models.ckpt"))
 
