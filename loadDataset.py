@@ -4,11 +4,12 @@ import numpy as np
 import re
 import settings
 
-def getXAndYForSingleMove(moveFramesDirPath:str, moveCSVPath:str)->('[X]','[Y]'):
+def getXAndYForSingleMove(moveFramesDirPath:str, moveCSVPath:str, count=None)->('[X]','[Y]'):
     fileList = os.listdir(moveFramesDirPath)
     moveX = []
     amtFiles = len(fileList)
-    for i in range (1, amtFiles + 1):
+    count = min(count + 1, amtFiles + 1) if count is not None else amtFiles + 1
+    for i in range (1, count):
         fullPath = moveFramesDirPath + "/" + str(i) + ".jpeg"
         img = cv2.imread(fullPath,cv2.IMREAD_COLOR )
         rgbFrame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) # Now in [r, b, g] form
@@ -22,14 +23,14 @@ def getXAndYForSingleMove(moveFramesDirPath:str, moveCSVPath:str)->('[X]','[Y]')
         for line in f:
             moveY[i] = int(line)
             i = i + 1
-    return (moveX, moveY)
+    return (moveX, moveY[:(count-1)])
 
 def loadDataSet(rockFramesDirPath:str, paperFramesDirPath:str, scissorFramesDirPath:str
-                , rockCSVPath:str, paperCSVPath:str, scissorCSVPath:str)->('[X]','[Y]'):
+                , rockCSVPath:str, paperCSVPath:str, scissorCSVPath:str, count=None)->('[X]','[Y]'):
 
-    rockX, rockY = getXAndYForSingleMove(rockFramesDirPath, rockCSVPath)
-    paperX, paperY = getXAndYForSingleMove(paperFramesDirPath, paperCSVPath)
-    scissorX, scissorY = getXAndYForSingleMove(scissorFramesDirPath, scissorCSVPath)
+    rockX, rockY = getXAndYForSingleMove(rockFramesDirPath, rockCSVPath, count)
+    paperX, paperY = getXAndYForSingleMove(paperFramesDirPath, paperCSVPath, count)
+    scissorX, scissorY = getXAndYForSingleMove(scissorFramesDirPath, scissorCSVPath, count)
     
     X = np.concatenate((rockX, paperX, scissorX), axis=0)
     Y = np.concatenate((rockY, paperY, scissorY), axis=0)
