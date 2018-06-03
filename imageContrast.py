@@ -15,7 +15,7 @@ argument:
 images: a batch of images with uint8 RGB values
 low: lower bound of contrast factor
 high: upper bound of contrast factor
-output: a batch of images applied random contrast
+output: a batch of images applied contrast with same random value of contrast factor
 
 '''
 def contrast(images, low=0.3, high=1):
@@ -28,9 +28,11 @@ def contrast(images, low=0.3, high=1):
     # print (images.shape)
 
     # contrast factor
-    contrast_factors = np.random.uniform(low, high, images.shape[0]).astype(np.float32)
-    
-    print (contrast_factors.shape)
+    seed = np.random.random_integers(low * 1000, high * 1000)
+    contrast_factors = np.full(images.shape[0], seed / 1000.0, np.float32)
+    # contrast_factors = np.random.uniform(low, high, images.shape[0]).astype(np.float32)
+    # print (contrast_factors[0])
+    # print (contrast_factors.shape)
 
     fn = lambda x: contrast_image(x[0], x[1])
     elems = (images, contrast_factors)
