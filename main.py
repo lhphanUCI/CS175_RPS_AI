@@ -177,4 +177,4 @@ class MyVideoCapture:
 
 if __name__=="__main__":
     # Create a window and pass it to the Application object
-    App(Tk(replay=True))
+    App(Tk(), replay=True)
