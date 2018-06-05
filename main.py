@@ -17,6 +17,7 @@ import numpy as np
 import models
 import settings
 import window_utils
+import loadDataset
 
 from numpy import argmax
 
@@ -46,14 +47,15 @@ def getFilledBlankImgList( maxListSize:int, inputDimensions:(int, int, int) )->l
 
 
 class App:
-    def __init__(self, window:'window', video_source=0):
+    def __init__(self, window:'window', video_source=0, replay=False):
         self.window = window
         self.window.title(settings.get_config("window_title"))
+        self.replay = replay
 
         # open video source (by default this will try to open the computer webcam)
         self.video_source = video_source
         self.vid = MyVideoCapture(self.video_source)
-        self.inputDimension = [self.vid.height, self.vid.width, 3]
+        #self.inputDimension = [self.vid.height, self.vid.width, 3]
         image_size = settings.get_config("image_input_size")
         self.maxListSize = settings.get_config("image_history_length")
         self.imgList = [np.zeros(image_size)] * self.maxListSize
@@ -84,6 +86,9 @@ class App:
         saver = tf.train.Saver()
         saver.restore(self.session, os.path.join(os.getcwd(), "savedmodels\\both\\models.ckpt"))
 
+        if self.replay:
+            self.data_gen = loadDataset.dataset_generator('./dataset/imgs/paper_frames', './dataset/csvs/paper.csv', repeat=True)
+
         # _main_loop() will "recursively" call itself at most (fps) times per second.
         self._main_loop()
         self.window.mainloop()
@@ -105,10 +110,14 @@ class App:
     def update(self):
         # TODO: Implement main functionality here.
         # Get a frame from the video source
-        ret, newFrame = self.vid.get_frame()
-        if not ret:
-            self.strVar.set("Error: Failed to read from video source.")
-            return None
+        if not self.replay:
+            ret, newFrame = self.vid.get_frame()
+            if not ret:
+                self.strVar.set("Error: Failed to read from video source.")
+                return None
+        else:
+            newFrame, _ = next(self.data_gen)
+
         self.photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(newFrame))
         self.canvas.create_image(0, 0, image=self.photo, anchor=NW)
 
@@ -168,4 +177,4 @@ class MyVideoCapture:
 
 if __name__=="__main__":
     # Create a window and pass it to the Application object
-    App(Tk())
+    App(Tk(replay=True))

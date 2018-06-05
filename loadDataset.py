@@ -35,7 +35,33 @@ def loadDataSet(rockFramesDirPath:str, paperFramesDirPath:str, scissorFramesDirP
     X = np.concatenate((rockX, paperX, scissorX), axis=0)
     Y = np.concatenate((rockY, paperY, scissorY), axis=0)
 
-    return (X, Y)   
+    return (X, Y)
+
+
+def dataset_generator(img_path, csv_path, max_count=None, repeat=False):
+    def img_generator():
+        file_list = os.listdir(img_path)
+        count = min(max_count + 1, len(file_list)) if max_count is not None else len(file_list) + 1
+        for i in range(1, count):
+            fullPath = img_path + "/" + str(i) + ".jpeg"
+            img = cv2.imread(fullPath, cv2.IMREAD_COLOR)
+            rgbFrame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Now in [r, b, g] form
+            #resizedImg = cv2.resize(rgbFrame, (settings.get_config("resizedW"), settings.get_config("resizedH")))
+            yield rgbFrame
+
+    def csv_generator():
+        with open(csv_path) as f:
+            for line in f:
+                yield int(line)
+
+    while True:
+        try:
+            img_gen, csv_gen = img_generator(), csv_generator()
+            while True:
+                yield next(img_gen), next(csv_gen)
+        except:
+            if not repeat:
+                return
 
 
 if __name__ == "__main__":
