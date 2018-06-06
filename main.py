@@ -52,19 +52,25 @@ class App:
         self.window.title(settings.get_config("window_title"))
         self.replay = replay
 
-        # open video source (by default this will try to open the computer webcam)
-        self.video_source = video_source
-        self.vid = MyVideoCapture(self.video_source)
-        #self.inputDimension = [self.vid.height, self.vid.width, 3]
+        if self.replay:
+            # Load previous data instead of from camera.
+            self.data_gen = loadDataset.dataset_generator('./dataset/imgs/scissor_frames', './dataset/csvs/scissor.csv',
+                                                          repeat=True)
+            self.inputDimension = [480, 640, 3]
+        else:
+            # open video source (by default this will try to open the computer webcam)
+            self.video_source = video_source
+            self.vid = MyVideoCapture(self.video_source)
+            self.inputDimension = [self.vid.height, self.vid.width, 3]
+
         image_size = settings.get_config("image_input_size")
         self.maxListSize = settings.get_config("image_history_length")
         self.imgList = [np.zeros(image_size)] * self.maxListSize
 
         # Create a canvas that can fit the above video source size
-        self.canvas = Canvas(window, width = self.vid.width, height = self.vid.height)
+        self.canvas = Canvas(window, height=self.inputDimension[0], width=self.inputDimension[1])
         self.canvas.pack()
         self.photo = None
-
         self.strVar = StringVar(value="None")
         self.lblClassification = Label(window, textvariable=self.strVar, font=("Helvetica", 16))
         self.lblClassification.pack(anchor=CENTER, expand=True)
@@ -85,9 +91,6 @@ class App:
         self.model2 = models.model2(image_size)
         saver = tf.train.Saver()
         saver.restore(self.session, os.path.join(os.getcwd(), "savedmodels\\both\\models.ckpt"))
-
-        if self.replay:
-            self.data_gen = loadDataset.dataset_generator('./dataset/imgs/paper_frames', './dataset/csvs/paper.csv', repeat=True)
 
         # _main_loop() will "recursively" call itself at most (fps) times per second.
         self._main_loop()
@@ -110,14 +113,13 @@ class App:
     def update(self):
         # TODO: Implement main functionality here.
         # Get a frame from the video source
-        if not self.replay:
+        if self.replay:
+            newFrame, _ = next(self.data_gen)
+        else:
             ret, newFrame = self.vid.get_frame()
             if not ret:
                 self.strVar.set("Error: Failed to read from video source.")
                 return None
-        else:
-            newFrame, _ = next(self.data_gen)
-
         self.photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(newFrame))
         self.canvas.create_image(0, 0, image=self.photo, anchor=NW)
 
