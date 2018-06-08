@@ -7,20 +7,16 @@ def batch_generator(X, Y, session, batch_size=64, vid_length=45, shuffle=False):
     N, H, W, R = X.shape
     total_length = N - vid_length
 
-    print("Building Tensor Graph...")
     order = np.random.permutation(total_length) if shuffle is True else np.arange(total_length)
     oper = _augment_video_oper(img_size=X.shape[1:], vid_length=vid_length)
-    print("Done Building Tensor Graph")
 
     for i in range(int(total_length / batch_size)):
         start_indices = order[(i)*batch_size:(i+1)*batch_size]
         x_batch = [X[(start):(start+vid_length)] for start in start_indices]
         y_batch = [Y[(start):(start+vid_length)] for start in start_indices]
 
-        print("Augmenting...")
         for j, x_vid in enumerate(x_batch):
             x_batch[j] = _augment_video(x_vid, session, oper)
-        print("Done Augmenting")
 
         yield np.stack(x_batch), np.stack(y_batch)
 
