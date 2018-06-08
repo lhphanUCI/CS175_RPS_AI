@@ -13,8 +13,8 @@ def getXAndYForSingleMove(moveFramesDirPath:str, moveCSVPath:str, count=None)->(
         fullPath = moveFramesDirPath + "/" + str(i) + ".jpeg"
         img = cv2.imread(fullPath,cv2.IMREAD_COLOR )
         rgbFrame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) # Now in [r, b, g] form
-        resizedImg = cv2.resize(rgbFrame, ( settings.get_config("resizedW"), settings.get_config("resizedH")))
-        moveX.append(resizedImg)
+        #resizedImg = cv2.resize(rgbFrame, ( settings.get_config("resizedW"), settings.get_config("resizedH")))
+        moveX.append(rgbFrame)#resizedImg)
     moveX = np.asarray(moveX)
 
     moveY = np.zeros(amtFiles)
