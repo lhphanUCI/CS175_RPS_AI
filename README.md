@@ -1,7 +1,7 @@
 # rockPaperScissorAI
 AI that will detect playable move and classify move <br/><br/>
 
-augment.py - TO BE FILLED
+augment.py - TO BE FILLED <br/>
 augmentation.py - Return new augmented X by brightness or rotation. Accomplished w/ opencv. <br/>
 augment-test.ipynb - TO BE FILLED <br/>
 datasetCollector.py - Code that will activate webcam to collect dataset <br/>
