@@ -9,22 +9,25 @@ def model1(image_size, image_history_length):
 
     with tf.variable_scope("model1"):
         with tf.variable_scope("Model"):
-            conv1 = _conv_axis1_loop(X, filters=1, kernel_size=[7, 7], strides=[4, 4],
+            conv1 = _conv_axis1_loop(X, filters=4, kernel_size=[7, 7], strides=[4, 4],
                                      padding="valid", activation=tf.nn.relu,
                                      name="conv1", reuse=tf.AUTO_REUSE)
-            conv2 = _conv_axis1_loop(conv1, filters=1, kernel_size=[7, 7], strides=[4, 4],
+            conv2 = _conv_axis1_loop(conv1, filters=4, kernel_size=[7, 7], strides=[4, 4],
                                      padding="valid", activation=tf.nn.relu,
                                      name="conv2", reuse=tf.AUTO_REUSE)
             flat2 = tf.layers.flatten(conv2)
-            dens4 = tf.layers.dense(flat2, units=64)
-            dens5 = tf.layers.dense(dens4, units=16)
-            logits = tf.layers.dense(dens5, units=2)
+            dens4 = tf.layers.dense(flat2, units=256)
+            dens5 = tf.layers.dense(dens4, units=64)
+            dens6 = tf.layers.dense(dens5, units=16)
+            logits = tf.layers.dense(dens6, units=2)
 
         with tf.variable_scope("Predict"):
             predict_op = tf.nn.softmax(logits)
 
         with tf.variable_scope("Loss"):
-            loss_op = tf.losses.softmax_cross_entropy(logits=logits, onehot_labels=tf.one_hot(Y, 2))
+            class_weights = tf.gather(tf.constant([1, 5]), Y)  # Incorrect "0" vs "1" has different costs.
+            loss_op = tf.losses.softmax_cross_entropy(logits=logits, onehot_labels=tf.one_hot(Y, 2), weights=class_weights)
+            # loss_op = tf.losses.softmax_cross_entropy(logits=logits, onehot_labels=tf.one_hot(Y, 2))
 
         with tf.variable_scope("Accuracy"):
             prediction = tf.argmax(logits, axis=1)

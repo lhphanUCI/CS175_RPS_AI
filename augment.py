@@ -1,5 +1,7 @@
 import tensorflow as tf
 import numpy as np
+import os
+import cv2
 from math import pi
 
 
@@ -19,6 +21,46 @@ def batch_generator(X, Y, session, batch_size=64, vid_length=45, shuffle=False):
             x_batch[j] = _augment_video(x_vid, session, oper)
 
         yield np.stack(x_batch), np.stack(y_batch)
+
+
+def batch_generator_from_path(img_paths, csv_paths, session, batch_size=64, vid_length=45, shuffle=False):
+    if not isinstance(img_paths, (tuple, list)):
+        img_paths = [img_paths]
+    if not isinstance(csv_paths, (tuple, list)):
+        csv_paths = [csv_paths]
+
+    csv_files = np.concatenate([_csv_to_list(path) for path in csv_paths])
+    img_files = [[path + "/" + str(i) + ".jpeg" for i in range(1, len(csv_files[j]) + 1)] for j, path in enumerate(img_paths)]
+    img_files = [item for sublist in img_files for item in sublist]  # Flatten to 1D
+    total_length = sum(len(lst) for lst in csv_files) - vid_length  # Number of video starting points
+
+    image_shape = _load_images(img_files[0]).shape
+    print(image_shape)
+    oper = _augment_video_oper(img_size=image_shape, vid_length=vid_length)
+    order = np.random.permutation(total_length) if shuffle is True else np.arange(total_length)
+
+    for i in range(int(total_length / batch_size)):
+        start_indices = order[(i)*batch_size:(i+1)*batch_size]
+        x_batch = [_load_images(img_files[(start):(start+vid_length)]) for start in start_indices]
+        y_batch = [csv_files[(start):(start+vid_length)] for start in start_indices]
+
+        for j, x_vid in enumerate(x_batch):
+            x_batch[j] = _augment_video(x_vid, session, oper)
+
+        yield np.stack(x_batch), np.stack(y_batch)
+
+
+def _csv_to_list(path):
+    with open(path) as f:
+        return f.read().splitlines()
+
+
+def _load_images(paths: str or list or tuple) -> np.array:
+    if isinstance(paths, str):
+        paths = [paths]
+    imgs = np.array([cv2.cvtColor(cv2.imread(path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB) for path in paths]).astype(float) / 255
+    print(paths, imgs.shape)
+    return imgs if imgs.shape[0] > 1 else imgs.reshape(imgs.shape[1:])
 
 
 def _augment_video(video, session, oper):
