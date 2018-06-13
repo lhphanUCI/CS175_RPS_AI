@@ -9,10 +9,10 @@ def model1(image_size, image_history_length):
 
     with tf.variable_scope("model1"):
         with tf.variable_scope("Model"):
-            conv1 = _conv_axis1_loop(X, filters=1, kernel_size=[7, 7], strides=[4, 4],
+            conv1 = _conv_axis1_loop(X, filters=4, kernel_size=[7, 7], strides=[4, 4],
                                      padding="valid", activation=tf.nn.relu,
                                      name="conv1", reuse=tf.AUTO_REUSE)
-            conv2 = _conv_axis1_loop(conv1, filters=1, kernel_size=[7, 7], strides=[4, 4],
+            conv2 = _conv_axis1_loop(conv1, filters=4, kernel_size=[7, 7], strides=[4, 4],
                                      padding="valid", activation=tf.nn.relu,
                                      name="conv2", reuse=tf.AUTO_REUSE)
             flat2 = tf.layers.flatten(conv2)

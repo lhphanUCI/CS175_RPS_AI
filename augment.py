@@ -23,16 +23,16 @@ def batch_generator(X, Y, session, batch_size=64, vid_length=45, shuffle=False):
 
 def _augment_video(video, session, oper):
     vid, aug, bc_order, brightness, contrast, flip, angle, boxes, indices = oper
-    image_size = video.shape[1:3]
     video_len = video.shape[0]
 
     # Additional code for cropping.
-    crop_off_height = np.random.randint(0, int(128 * 0.2))
-    crop_off_width = np.random.randint(0, int(128 * 0.2))
-    crop_out_height = int(128 * 0.8)
-    crop_out_width = int(128 * 0.8)
+    crop_off_height = np.random.randint(0, 16)
+    crop_off_width = np.random.randint(0, 16)
+    crop_out_height = 64
+    crop_out_width = 64
     boxes_ = np.tile(np.array([crop_off_height, crop_off_width,
-                              crop_off_height + crop_out_height, crop_off_width + crop_out_width]), (video_len, 1)) / 128
+                              crop_off_height + crop_out_height, crop_off_width + crop_out_width]),
+                     (video_len, 1)) / 80
 
     # Perform Augmentation
     return session.run(aug, feed_dict={
@@ -53,15 +53,16 @@ def _augment_video_oper(img_size, vid_length):
     boxes = tf.placeholder(tf.float32, [vid_length, 4])
     indices = tf.placeholder(tf.int32, [vid_length])
     bc_order, flip = [tf.placeholder(tf.bool, [])] * 2
-    shrink_size = tf.constant([128, 128])
+    #shrink_size = tf.constant([80, 80])
     output_size = tf.constant([64, 64])
 
     oper = video
-    oper = _shrink(oper, output_size=shrink_size)
+    #oper = _shrink(oper, output_size=shrink_size)
     #oper = _brightness_and_contrast(oper, bc_order=bc_order, brightness=brightness, contrast=contrast)
     #oper = tf.image.adjust_contrast(oper, contrast_factor=contrast)
+
+    #oper = _rotate(oper, angle=angle)
     oper = _flip_left_right(oper, flip=flip)
-    oper = _rotate(oper, angle=angle)
     oper = _crop_and_shrink(oper, boxes, indices, output_size)
 
     return video, oper, bc_order, brightness, contrast, flip, angle, boxes, indices
