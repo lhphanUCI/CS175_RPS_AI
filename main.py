@@ -86,7 +86,9 @@ class App:
 
         # Initialize Tensorflow Models
         tf.reset_default_graph()
-        self.session = tf.Session()
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        self.session = tf.Session(config=config)
         self.model1 = models.model1(image_size, self.maxListSize)
         self.model2 = models.model2(image_size)
         saver = tf.train.Saver()
@@ -114,7 +116,7 @@ class App:
         # TODO: Implement main functionality here.
         # Get a frame from the video source
         if self.replay:
-            newFrame, _ = next(self.data_gen)
+            newFrame, y = next(self.data_gen)
         else:
             ret, newFrame = self.vid.get_frame()
             if not ret:
@@ -123,9 +125,12 @@ class App:
         self.photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(newFrame))
         self.canvas.create_image(0, 0, image=self.photo, anchor=NW)
 
-        # Add the (normalized) frame to the queue.
-        normalized_frame = cv2.resize((newFrame.astype(np.float32) - 128) / 128, (64, 64))
-        self.imgList.append(normalized_frame)
+        # Add the frame to the queue, after pre-processing.
+        frame = cv2.resize(newFrame, (80, 80))
+        frame = cv2.Canny(frame, 50, 100)
+        frame = frame[8:-8, 8:-8]  # Middle (64, 64)
+        frame = frame.reshape((64, 64, 1))
+        self.imgList.append(frame)
         if len(self.imgList) >= self.maxListSize:
             self.imgList.pop(0)
 
@@ -137,7 +142,7 @@ class App:
 
     def predict_shake(self) -> bool:
         predict_op, X_in = self.model1[0][0], self.model1[1][0]
-        softmax = self.session.run(predict_op, feed_dict={X_in: np.array(self.imgList)[None]})
+        softmax = self.session.run(predict_op, feed_dict={X_in: np.array(self.imgList)[None]})  # None adds batch dim.
         return bool(argmax(softmax))
 
     def predict_class(self) -> Classification:

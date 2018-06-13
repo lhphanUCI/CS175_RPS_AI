@@ -5,6 +5,6 @@
 	"resizedH": 64,
 
     "max_fps": 15,
-	"image_input_size": [64, 64, 3],
+	"image_input_size": [64, 64, 1],
     "image_history_length": 45
 }
