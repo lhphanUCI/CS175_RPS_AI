@@ -179,7 +179,3 @@ class MyVideoCapture:
     def __del__(self):
         if self.vid.isOpened():
             self.vid.release()
-
-if __name__=="__main__":
-    # Create a window and pass it to the Application object
-    App(Tk(), replay=True)

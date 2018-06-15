@@ -1,6 +1,6 @@
-.idea/
-.ipynb_checkpoints/
-recordedDataset
-dataset
-outputTestVideos
-*.pyc
+/project/src/.idea/
+/project/src/.ipynb_checkpoints/
+/project/src/recordedDataset
+/project/src/dataset
+/project/src/outputTestVideos
+/project/src/*.pyc
