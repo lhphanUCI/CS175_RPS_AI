@@ -11776,6 +11776,19 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">run</span> main.py
 </pre></div>
 
@@ -11788,7 +11801,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="IMPORTANT:-To-run-the-next-block-of-code,-must-place-dataset-in-/project/src/">IMPORTANT: To run the next block of code, must place dataset in /project/src/<a class="anchor-link" href="#IMPORTANT:-To-run-the-next-block-of-code,-must-place-dataset-in-/project/src/">&#182;</a></h1><h2 id="If-this-is-not-done,-then-a-softlock-will-occur.-A-window-should-pop-up-after-executing-the-next-block-of-code.-If-no-window-pops-up-after-3-minute,-make-sure-dataset-is-placed-in-correct-place.">If this is not done, then a softlock will occur. A window should pop up after executing the next block of code. If no window pops up after 3 minute, make sure dataset is placed in correct place.<a class="anchor-link" href="#If-this-is-not-done,-then-a-softlock-will-occur.-A-window-should-pop-up-after-executing-the-next-block-of-code.-If-no-window-pops-up-after-3-minute,-make-sure-dataset-is-placed-in-correct-place.">&#182;</a></h2>
+<h1 id="IMPORTANT:-To-run-the-next-block-of-code,-must-place-dataset-in-/project/src/">IMPORTANT: To run the next block of code, must place dataset in /project/src/<a class="anchor-link" href="#IMPORTANT:-To-run-the-next-block-of-code,-must-place-dataset-in-/project/src/">&#182;</a></h1>
 </div>
 </div>
 </div>
@@ -11802,62 +11815,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">App</span><span class="p">(</span><span class="n">Tk</span><span class="p">(),</span> <span class="n">replay</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>INFO:tensorflow:Restoring parameters from C:\Users\LeePhan\Desktop\CS175_RPS_AI\project\src\savedmodels\both\models.ckpt
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[2]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>&lt;__main__.App at 0x175b8e16cf8&gt;</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Execute-next-block-of-code-to-run-the-real-time-detector-with-webcam">Execute next block of code to run the real time detector with webcam<a class="anchor-link" href="#Execute-next-block-of-code-to-run-the-real-time-detector-with-webcam">&#182;</a></h2>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">App</span><span class="p">(</span><span class="n">Tk</span><span class="p">(),</span> <span class="n">replay</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">App</span><span class="p">(</span><span class="n">Tk</span><span class="p">(),</span> <span class="n">replay</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -11887,7 +11848,59 @@ div#notebook {
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>&lt;__main__.App at 0x175bf289940&gt;</pre>
+<pre>&lt;__main__.App at 0x1b3197eb278&gt;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Execute-next-block-of-code-to-run-the-real-time-detector-with-webcam">Execute next block of code to run the real time detector with webcam<a class="anchor-link" href="#Execute-next-block-of-code-to-run-the-real-time-detector-with-webcam">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">App</span><span class="p">(</span><span class="n">Tk</span><span class="p">(),</span> <span class="n">replay</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>INFO:tensorflow:Restoring parameters from C:\Users\LeePhan\Desktop\CS175_RPS_AI\project\src\savedmodels\both\models.ckpt
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[4]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;__main__.App at 0x1b32451aa20&gt;</pre>
 </div>
 
 </div>
