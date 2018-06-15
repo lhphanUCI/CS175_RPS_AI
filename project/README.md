@@ -11,6 +11,7 @@ loadDataset.py - Loads directories and csv files to return (X, Y) <br/>
 main.py - Runs webcam to classify moves in real time <br/>
 models.py - Module containing Tensorflow model definitions. <br/>
 models-train.ipynb - Jupyter Notebook used to train and cross-validate models. <br/>
+project.ipynb - Jupyter Notebook to demonstrate project<br/>
 settings.json - Contains various values that will be used globally among all files <br/>
 settings.py - Return values set in settings.json file <br/>
 window_utils.py - Misc. custom functions used by TKinter application, including framerate limiter. <br/>
