@@ -1,4 +1,11 @@
 # rockPaperScissorAI
+
+Dataset can be downloaded with the following link:
+https://drive.google.com/open?id=1tw9W_OWsSr7uEsCCj4sLu0urAfpY4Odq
+
+github repository link:
+https://github.com/lhphanUCI/CS175_RPS_AI
+
 AI that will detect playable move and classify move <br/><br/>
 
 augment.py - Video augmentation functions combined into one module. <br/>
