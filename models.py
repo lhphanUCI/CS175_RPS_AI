@@ -11,18 +11,20 @@ def model1(image_size, image_history_length):
         with tf.variable_scope("Model"):
             conv1 = _conv_axis1_loop(X, filters=8, kernel_size=[7, 7], strides=[4, 4],
                                      padding="valid", activation=tf.nn.relu,
-                                     name="conv1", reuse=tf.AUTO_REUSE)
+                                     name="conv1", reuse=tf.AUTO_REUSE,
+                                     kernel_regularizer=tf.contrib.layers.l2_regularizer(0.1))
             conv2 = _conv_axis1_loop(conv1, filters=4, kernel_size=[7, 7], strides=[4, 4],
                                      padding="valid", activation=tf.nn.relu,
-                                     name="conv2", reuse=tf.AUTO_REUSE)
+                                     name="conv2", reuse=tf.AUTO_REUSE,
+                                     kernel_regularizer=tf.contrib.layers.l2_regularizer(0.1))
 
             flat1 = tf.layers.flatten(conv2)
-            bnrm1 = tf.layers.batch_normalization(flat1)
-            drop1 = tf.layers.dropout(bnrm1, rate=0.25)
+            bnrm1 = tf.layers.batch_normalization(flat1, training=training)
+            drop1 = tf.layers.dropout(bnrm1, rate=0.25, training=training)
 
-            dens1 = tf.layers.dense(drop1, units=1024, activation=tf.nn.relu)
-            dens2 = tf.layers.dense(dens1, units=256, activation=tf.nn.relu)
-            dens3 = tf.layers.dense(dens2, units=64, activation=tf.nn.relu)
+            dens1 = tf.layers.dense(drop1, units=1024, activation=tf.nn.relu, kernel_regularizer=tf.contrib.layers.l2_regularizer(0.1))
+            dens2 = tf.layers.dense(dens1, units=256, activation=tf.nn.relu, kernel_regularizer=tf.contrib.layers.l2_regularizer(0.1))
+            dens3 = tf.layers.dense(dens2, units=64, activation=tf.nn.relu, kernel_regularizer=tf.contrib.layers.l2_regularizer(0.1))
             logits = tf.layers.dense(dens3, units=2)
 
         with tf.variable_scope("Predict"):
@@ -63,8 +65,8 @@ def model2(image_size):
             maxp2 = tf.layers.max_pooling2d(conv4, pool_size=[2, 2], strides=[1, 1], padding="valid")
 
             flat1 = tf.layers.flatten(maxp2)
-            bnrm1 = tf.layers.batch_normalization(flat1)
-            drop1 = tf.layers.dropout(bnrm1, rate=0.25)
+            bnrm1 = tf.layers.batch_normalization(flat1, training=training)
+            drop1 = tf.layers.dropout(bnrm1, rate=0.25, training=training)
 
             dens1 = tf.layers.dense(drop1, units=1024, activation=tf.nn.relu)
             dens2 = tf.layers.dense(dens1, units=256, activation=tf.nn.relu)
@@ -140,12 +142,12 @@ def model1_alt1(image_size, image_history_length):
     return [predict_op, loss_op, accuracy_op, train_op], (X, Y, training)
 
 
-def _conv_axis1_loop(X, filters, kernel_size, strides, padding, activation, name, reuse):
+def _conv_axis1_loop(X, filters, kernel_size, strides, padding, activation, name, reuse, kernel_regularizer):
     new_shape = [-1] + [d for i, d in enumerate(X.shape[1:]) if i != 0]
     conc = []
     for i in range(X.shape[1]):
         x = tf.reshape(X[:, i], new_shape)
         l = tf.layers.conv2d(x, filters=filters, kernel_size=kernel_size, strides=strides, padding=padding,
-                             activation=activation, name=name, reuse=reuse)
+                             activation=activation, name=name, reuse=reuse, kernel_regularizer=kernel_regularizer)
         conc.append(tf.expand_dims(l, 1))
     return tf.concat(conc, axis=1)

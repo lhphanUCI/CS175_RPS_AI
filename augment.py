@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import cv2
 from math import pi
 
 
@@ -48,6 +49,20 @@ def augment_video_oper(img_size, vid_length):
     oper = _crop_and_shrink(oper, boxes, indices, output_size)
 
     return video, oper, bc_order, brightness, contrast, flip, angle, boxes, indices
+
+
+def format_image(image):
+    img = image
+    if img.shape[0] != 80:
+        img = cv2.resize(image, (80, 80))
+        img = cv2.Canny(img, 50, 100)
+    img = img[8:-8, 8:-8]  # Middle (64, 64)
+    img = img.reshape((64, 64, 1))
+    return img
+
+
+def format_video(video):
+    return np.stack([format_image(video[i]) for i in range(video.shape[0])])
 
 
 def _brightness_and_contrast(video, bc_order, brightness, contrast):

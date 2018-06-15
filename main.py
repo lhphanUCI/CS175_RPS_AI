@@ -18,6 +18,7 @@ import models
 import settings
 import window_utils
 import loadDataset
+import augment
 
 from numpy import argmax
 
@@ -126,10 +127,7 @@ class App:
         self.canvas.create_image(0, 0, image=self.photo, anchor=NW)
 
         # Add the frame to the queue, after pre-processing.
-        frame = cv2.resize(newFrame, (80, 80))
-        frame = cv2.Canny(frame, 50, 100)
-        frame = frame[8:-8, 8:-8]  # Middle (64, 64)
-        frame = frame.reshape((64, 64, 1))
+        frame = augment.format_image(newFrame)
         self.imgList.append(frame)
         if len(self.imgList) >= self.maxListSize:
             self.imgList.pop(0)
@@ -141,13 +139,13 @@ class App:
             self.setNewPrediction(Classification.NONE)
 
     def predict_shake(self) -> bool:
-        predict_op, X_in = self.model1[0][0], self.model1[1][0]
-        softmax = self.session.run(predict_op, feed_dict={X_in: np.array(self.imgList)[None]})  # None adds batch dim.
+        predict_op, X_in, training_in = self.model1[0][0], self.model1[1][0], self.model1[1][2]
+        softmax = self.session.run(predict_op, feed_dict={X_in: np.stack(self.imgList)[None], training_in: False})  # None adds batch dim.
         return bool(argmax(softmax))
 
     def predict_class(self) -> Classification:
-        predict_op, X_in = self.model2[0][0], self.model2[1][0]
-        softmax = self.session.run(predict_op, feed_dict={X_in: np.array(self.imgList[-1])[None]})
+        predict_op, X_in, training_in = self.model2[0][0], self.model2[1][0], self.model2[1][2]
+        softmax = self.session.run(predict_op, feed_dict={X_in: np.array(self.imgList[-1])[None], training_in: False})
         return Classification(argmax(softmax)+1)
 
     def setNewPrediction(self, classification:Classification)->None:
